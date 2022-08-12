@@ -1,24 +1,37 @@
 <template>
   <ion-page>
+
+    <LayoutHeader/>
+
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
           <ion-title size="large">Blank</ion-title>
         </ion-toolbar>
       </ion-header>
-    
-      <div id="container">
-        <div class="flex justify-center">
-          <ion-img class="w-94" :src="require(`/public/assets/image/image-removebg-preview.png`)" alt="Exedy App"></ion-img>
-        </div>
+
+      <div id="container" class="pt-6">
         <div class="px-12 space-y-4" v-if="!is_loading">
-          <Form @submit.prevent="onSubmit">
-            <ion-item>
-              <ion-label position="floating">Robot IDを入力してください</ion-label>
-              <ion-input rules="required" v-model="form.robot_id"></ion-input>
-            </ion-item>
-            <ion-button type="submit" size="large" expand="block" color="primary">接続開始</ion-button>
-          </Form>
+          <div class="flex">
+            <div class="grow w-full">
+              <ion-item>
+                <ion-label position="floating">ロボットのステータス</ion-label>
+                <ion-input v-model="form.status"></ion-input>
+              </ion-item>
+            </div>
+            <div class="self-center p-3">
+              <ion-button id="reset-button" color="primary">
+                <ion-icon name="refresh-outline"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+          <div class="border-b-0 text-left">
+            <ion-label position="floating" class="text-xs">カメラ映像</ion-label>
+            <div class="flex justify-center">
+              <ion-img class="w-94" :src="require(`/public/assets/image/gazebo-pic.webp`)" alt="Exedy App"></ion-img>
+            </div>
+          </div>
+          <ion-button @click="onSubmit" size="large" expand="block" color="primary">追従開始</ion-button>
         </div>
         <div class="px-12 space-y-4" v-else>
           <ion-loading
@@ -42,15 +55,13 @@ import {
   IonImg,
   IonPage,
   IonButton,
-  toastController,
   IonTitle,
   IonToolbar,
   IonLabel,
   IonInput,
   IonItem } from '@ionic/vue';
 import {defineComponent, ref} from 'vue';
-import { informationCircle } from 'ionicons/icons';
-
+import LayoutHeader from '@/layouts/LayoutHeader.vue';
 export default defineComponent({
   name: 'HomePage',
   data() {
@@ -58,11 +69,12 @@ export default defineComponent({
       is_loading: ref(false),
       timeout: 5000,
       form: {
-        robot_id: ""
+        status: "停止中"
       }
     }
   },
   components: {
+    LayoutHeader,
     IonLoading,
     IonButton,
     IonImg,
@@ -79,58 +91,27 @@ export default defineComponent({
     onLoading(state: boolean) {
       this.is_loading = this.is_loading = state
     },
-    async openToastOptions() {
-      const toast = await toastController
-          .create({
-            header: 'Robot Id is required',
-            icon: informationCircle,
-            color: 'danger',
-            duration: 200000,
-            position: 'top',
-            buttons: [
-              {
-                text: 'OK',
-                role: 'cancel',
-                handler: () => {
-                  console.log('Cancelled');
-                }
-              }
-            ]
-          })
-      await toast.present();
-
-      const { role } = await toast.onDidDismiss();
-      console.log('onDidDismiss resolved with role', role);
-    },
     onSubmit() {
-      console.log(this.form.robot_id.length)
-      if (this.form.robot_id.length == 0) {
-        this.openToastOptions()
-        return false
-      }
-
-      console.log(this.form.robot_id)
+      console.log(this.form.status)
       // consums api function
       this.onLoading(true)
-      setTimeout(() => {
-        this.$router.push({
-          path: '/robot/status'
-        });
-      }, 5000)
     }
   }
 });
 </script>
 
 <style scoped>
+#reset-button {
+  --border-radius: 100% !important;
+  width: 50px !important;
+  height: 50px !important;
+}
 #container {
   text-align: center;
 
   position: absolute;
   left: 0;
   right: 0;
-  top: 50%;
-  transform: translateY(-50%);
 }
 
 #container strong {

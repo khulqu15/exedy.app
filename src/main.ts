@@ -19,14 +19,33 @@ import '@ionic/vue/css/text-alignment.css';
 import '@ionic/vue/css/text-transformation.css';
 import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
+import { defineRule } from 'vee-validate';
+
+defineRule('required', (value: any) => {
+  if (!value || !value.length) {
+    return 'This field is required';
+  }
+  return true;
+});
+
+defineRule('email', (value: any) => {
+  if (!value || !value.length) {
+    return true;
+  }
+  if (!/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}/.test(value)) {
+    return 'This field must be a valid email';
+  }
+  return true;
+});
 
 /* Theme variables */
 import './theme/variables.css';
+import './theme/tailwind.css';
 
 const app = createApp(App)
   .use(IonicVue)
   .use(router);
-  
+
 router.isReady().then(() => {
   app.mount('#app');
 });
