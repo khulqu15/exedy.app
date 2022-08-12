@@ -1,0 +1,7 @@
+{
+  "name": "exedy",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}
