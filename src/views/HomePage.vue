@@ -85,7 +85,7 @@ export default defineComponent({
             header: 'Robot Id is required',
             icon: informationCircle,
             color: 'danger',
-            duration: 200000,
+            duration: 5000,
             position: 'top',
             buttons: [
               {
