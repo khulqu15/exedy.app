@@ -1,35 +1,20 @@
 <template>
   <ion-page>
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Blank</ion-title>
-        </ion-toolbar>
-      </ion-header>
-    
-      <div id="container">
-        <div class="flex justify-center">
-          <ion-img class="w-94" :src="require(`/public/assets/image/image-removebg-preview.png`)" alt="Exedy App"></ion-img>
+        <div class="my-32">
+          <div class="flex justify-center place-content-cente">
+            <ion-img class="w-94" :src="require(`/public/assets/image/app.png`)" alt="Exedy App"></ion-img>
+          </div>
+          <div class="px-12 space-y-4">
+            <Form @submit.prevent="onSubmit">
+              <ion-item>
+                <ion-label position="floating">Robot IDを入力してください</ion-label>
+                <ion-input rules="required" v-model="form.robot_id"></ion-input>
+              </ion-item>
+              <ion-button type="submit" size="large" expand="block" color="primary">接続開始</ion-button>
+            </Form>
+          </div>
         </div>
-        <div class="px-12 space-y-4" v-if="!is_loading">
-          <Form @submit.prevent="onSubmit">
-            <ion-item>
-              <ion-label position="floating">Robot IDを入力してください</ion-label>
-              <ion-input rules="required" v-model="form.robot_id"></ion-input>
-            </ion-item>
-            <ion-button type="submit" size="large" expand="block" color="primary">接続開始</ion-button>
-          </Form>
-        </div>
-        <div class="px-12 space-y-4" v-else>
-          <ion-loading
-              :is-open="is_loading"
-              cssClass="my-custom-class"
-              message="接続中..."
-              :duration="timeout"
-              @didDismiss="onLoading(false)"
-          ></ion-loading>
-        </div>
-      </div>
     </ion-content>
   </ion-page>
 </template>
@@ -37,33 +22,33 @@
 <script lang="ts">
 import {
   IonContent,
-  IonLoading,
   IonHeader,
   IonImg,
   IonPage,
   IonButton,
-  toastController,
   IonTitle,
   IonToolbar,
   IonLabel,
   IonInput,
-  IonItem } from '@ionic/vue';
-import {defineComponent, ref} from 'vue';
-import { informationCircle } from 'ionicons/icons';
+  IonItem } from '@ionic/vue'
+import {defineComponent} from 'vue'
+import ToastMixin from '@/mixins/ToastMixin.vue'
+import LoadingMixin from '@/mixins/LoadingMixin.vue'
 
 export default defineComponent({
+  mixins: [ToastMixin, LoadingMixin],
   name: 'HomePage',
   data() {
     return {
-      is_loading: ref(false),
-      timeout: 5000,
       form: {
         robot_id: ""
       }
     }
   },
+  mounted() {
+    this.form.robot_id = ''
+  },
   components: {
-    IonLoading,
     IonButton,
     IonImg,
     IonContent,
@@ -76,78 +61,29 @@ export default defineComponent({
     IonToolbar
   },
   methods: {
-    onLoading(state: boolean) {
-      this.is_loading = this.is_loading = state
-    },
-    async openToastOptions() {
-      const toast = await toastController
-          .create({
-            header: 'Robot Id is required',
-            icon: informationCircle,
-            color: 'danger',
-            duration: 5000,
-            position: 'top',
-            buttons: [
-              {
-                text: 'OK',
-                role: 'cancel',
-                handler: () => {
-                  console.log('Cancelled');
-                }
-              }
-            ]
-          })
-      await toast.present();
-
-      const { role } = await toast.onDidDismiss();
-      console.log('onDidDismiss resolved with role', role);
-    },
-    onSubmit() {
-      console.log(this.form.robot_id.length)
+    onSubmit: function (event: any) {
       if (this.form.robot_id.length == 0) {
-        this.openToastOptions()
-        return false
+        this.showToast('Robot id is required', 'danger', 5000, 'top')
       }
-
-      console.log(this.form.robot_id)
-      // consums api function
-      this.onLoading(true)
-      setTimeout(() => {
-        this.$router.push({
-          path: '/robot/status'
-        });
-      }, 5000)
+      event.preventDefault()
+      this.axios.get(`${process.env.VUE_APP_URL}${this.form.robot_id}/status`).then((response: any) => {
+        if(!response.data.status)
+          this.showToast('Robot id is not found', 'danger', 5000, 'top')
+        else {
+          this.showLoading(null, 5000)
+          setTimeout(() => {
+            this.$router.push({
+              path: `/robot/${this.form.robot_id}/status`
+            });
+          }, 5000)
+        }
+      }).catch((error: any) => {
+        if(error.response != undefined) {
+          if(error.response.status == 404)
+            this.showToast('Request not found', 'danger', 5000, 'top')
+        }
+      })
     }
   }
 });
 </script>
-
-<style scoped>
-#container {
-  text-align: center;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
-}
-</style>

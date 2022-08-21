@@ -19,18 +19,18 @@ const routes: Array<RouteRecordRaw> = [
     children: [
       {
         path: '',
-        redirect: '/robot/status',
+        redirect: '/robot/:robot_id/status',
       },
       {
-        path: 'status',
+        path: ':robot_id/status',
         component: () => import('@/views/robot/RobotStatusPage.vue')
       },
       {
-        path: 'navigation',
+        path: ':robot_id/navigation',
         component: () => import('@/views/robot/RobotNavigationPage.vue')
       },
       {
-        path: 'routing',
+        path: ':robot_id/routing',
         component: () => import('@/views/robot/RobotRoutingPage.vue')
       },
     ]

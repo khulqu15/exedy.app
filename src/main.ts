@@ -1,8 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router';
-
-import { IonicVue } from '@ionic/vue';
+import {IonicVue, toastController} from '@ionic/vue';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -19,7 +18,11 @@ import '@ionic/vue/css/text-alignment.css';
 import '@ionic/vue/css/text-transformation.css';
 import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
+import '@/index.css';
+
 import { defineRule } from 'vee-validate';
+import axios from 'axios'
+import VueAxios from "vue-axios";
 
 defineRule('required', (value: any) => {
   if (!value || !value.length) {
@@ -41,10 +44,15 @@ defineRule('email', (value: any) => {
 /* Theme variables */
 import './theme/variables.css';
 import './theme/tailwind.css';
+import {informationCircle} from "ionicons/icons";
 
 const app = createApp(App)
-  .use(IonicVue)
-  .use(router);
+app.config.globalProperties.axios = axios
+app.config.globalProperties.baseUrl = 'http://localhost:8000/v1/robots/'
+app.use(IonicVue)
+app.use(router)
+app.provide("$baseUrl", 'http://localhost:8000/v1/robots/')
+app.use(VueAxios, axios)
 
 router.isReady().then(() => {
   app.mount('#app');
