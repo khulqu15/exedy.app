@@ -4,40 +4,23 @@
     <LayoutHeader/>
 
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Blank</ion-title>
-        </ion-toolbar>
-      </ion-header>
-
-      <div id="container" class="pt-6">
-        <div class="px-12 space-y-4" v-if="!is_loading">
+      <div id="container" class="pt-6 pb-24">
+        <div class="px-12 space-y-4">
           <div class="px-8 my-6 mb-12">
-            <ion-button @click="onSubmit" expand="block" color="primary">
+            <ion-button @click="getMap(true)" expand="block" color="primary">
               <ion-icon name="refresh-outline"></ion-icon>
               <span class="inline-block mx-3">Update Map</span>
             </ion-button>
           </div>
-          <div class="flex justify-center">
-            <ion-img class="w-94" :src="require(`/public/assets/image/closed-room-world-1024x555.webp`)" alt="Exedy App"></ion-img>
-          </div>
+          <canvas-view/>
           <ion-item>
-            <ion-label>自律走行</ion-label>
-            <ion-select>
-              <ion-select-option value="brown">自律走行</ion-select-option>
-              <ion-select-option value="blonde">先導走行</ion-select-option>
+            <ion-label>Choose mode</ion-label>
+            <ion-select v-model="form.mode">
+              <ion-select-option value="auto">自律走行</ion-select-option>
+              <ion-select-option value="run">先導走行</ion-select-option>
             </ion-select>
           </ion-item>
           <ion-button @click="onSubmit" size="large" expand="block" color="primary">走行開始</ion-button>
-        </div>
-        <div class="px-12 space-y-4" v-else>
-          <ion-loading
-              :is-open="is_loading"
-              cssClass="my-custom-class"
-              message="接続中..."
-              :duration="timeout"
-              @didDismiss="onLoading(false)"
-          ></ion-loading>
         </div>
       </div>
     </ion-content>
@@ -47,88 +30,65 @@
 <script lang="ts">
 import {
   IonContent,
-  IonLoading,
-  IonHeader,
-  IonImg,
   IonSelect,
   IonSelectOption,
   IonPage,
   IonButton,
-  IonTitle,
   IonLabel,
-  IonToolbar,
-  IonInput,
   IonItem } from '@ionic/vue';
 import {defineComponent, ref} from 'vue';
+import CanvasView from '@/components/CanvasView.vue'
 import LayoutHeader from '@/layouts/LayoutHeader.vue';
+import LoadingMixin from "@/mixins/LoadingMixin.vue";
+import ToastMixin from "@/mixins/ToastMixin.vue";
 export default defineComponent({
+  mixins: [LoadingMixin, ToastMixin],
   name: 'HomePage',
   data() {
     return {
-      is_loading: ref(false),
-      timeout: 5000,
+      data: [],
+      map_meta_data: {},
+      robot_position: {},
       form: {
-        status: "停止中"
+        mode: ""
       }
     }
   },
+  mounted() {
+    this.getMap()
+    this.initCanvas()
+  },
   components: {
+    CanvasView,
     LayoutHeader,
-    IonLoading,
     IonButton,
-    IonImg,
     IonSelect,
     IonSelectOption,
     IonContent,
-    IonHeader,
     IonPage,
-    IonTitle,
     IonLabel,
     IonItem,
-    IonToolbar
   },
   methods: {
-    onLoading(state: boolean) {
-      this.is_loading = this.is_loading = state
+    initCanvas() {
+
+    },
+    getMap(reload = false) {
+      this.axios.get(`${process.env.VUE_APP_URL}${this.$route.params.robot_id}/map`).then((response: any) => {
+        if(response.data.status) {
+          this.map_meta_data = response.data.map_meta_data
+          this.data = response.data.data
+          this.robot_position = response.data.robot_position
+        }
+        if(reload)
+          this.showToast('Data is loaded', 'success', 5000, 'top')
+      })
     },
     onSubmit() {
-      console.log(this.form.status)
+      this.showLoading(null, 5000)
+      console.log(this.form.mode)
       // consums api function
-      this.onLoading(true)
     }
   }
 });
 </script>
-
-<style scoped>
-#reset-button {
-  --border-radius: 100% !important;
-  width: 50px !important;
-  height: 50px !important;
-}
-#container {
-  text-align: center;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-}
-
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
-}
-</style>

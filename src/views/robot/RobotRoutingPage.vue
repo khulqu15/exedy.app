@@ -4,16 +4,10 @@
     <LayoutHeader/>
 
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Blank</ion-title>
-        </ion-toolbar>
-      </ion-header>
-
-      <div id="container" class="pt-6">
-        <div class="px-12 space-y-4" v-if="!is_loading">
+      <div id="container" class="pt-6 pb-24">
+        <div class="px-12 space-y-4">
           <div class="px-8 my-6 mb-12">
-            <ion-button @click="onSubmit" expand="block" color="primary">
+            <ion-button @click="onUpdate()" expand="block" color="primary">
               <ion-icon name="refresh-outline"></ion-icon>
               <span class="inline-block mx-3">Update Map</span>
             </ion-button>
@@ -32,15 +26,6 @@
             </ion-row>
           </ion-grid>
         </div>
-        <div class="px-12 space-y-4" v-else>
-          <ion-loading
-              :is-open="is_loading"
-              cssClass="my-custom-class"
-              message="接続中..."
-              :duration="timeout"
-              @didDismiss="onLoading(false)"
-          ></ion-loading>
-        </div>
       </div>
     </ion-content>
   </ion-page>
@@ -52,82 +37,37 @@ import {
   IonCol,
   IonContent,
   IonGrid,
-  IonLoading,
-  IonHeader,
   IonImg,
   IonPage,
-  IonButton,
-  IonTitle,
-  IonToolbar} from '@ionic/vue';
+  IonButton} from '@ionic/vue';
 import {defineComponent, ref} from 'vue';
 import LayoutHeader from '@/layouts/LayoutHeader.vue';
+import LoadingMixin from "@/mixins/LoadingMixin.vue";
+import ToastMixin from "@/mixins/ToastMixin.vue";
 export default defineComponent({
-  name: 'HomePage',
-  data() {
-    return {
-      is_loading: ref(false),
-      timeout: 5000,
-      form: {
-        status: "停止中"
-      }
-    }
-  },
+  name: 'RobotRoutingPage',
+  mixins: [LoadingMixin, ToastMixin],
   components: {
     LayoutHeader,
-    IonLoading,
     IonRow,
     IonCol,
     IonGrid,
     IonButton,
     IonImg,
     IonContent,
-    IonHeader,
     IonPage,
-    IonTitle,
-    IonToolbar
   },
   methods: {
-    onLoading(state: boolean) {
-      this.is_loading = this.is_loading = state
+    onUpdate() {
+      this.showLoading(null, 4000)
+      setTimeout(() => {
+        this.showToast('Data is loaded', 'success', 5000, 'top')
+      }, 5000)
     },
     onSubmit() {
-      console.log(this.form.status)
+      this.showLoading(null, 5000)
       // consums api function
-      this.onLoading(true)
     }
   }
 });
 </script>
-
-<style scoped>
-#reset-button {
-  --border-radius: 100% !important;
-  width: 50px !important;
-  height: 50px !important;
-}
-#container {
-  text-align: center;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-}
-
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
-}
-</style>

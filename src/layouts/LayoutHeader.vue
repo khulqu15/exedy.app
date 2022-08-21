@@ -6,7 +6,7 @@
           <ion-icon class="cursor-pointer relative -right-4 top-1" name="close-outline" size="large"></ion-icon>
         </div>
         <div class="grow w-full self-end justify-self-end">
-          <ion-img class="w-16 mx-auto" :src="require(`/public/assets/image/image-removebg-preview.png`)" alt="Exedy App"></ion-img>
+          <ion-img class="w-36 mx-auto" :src="require(`/public/assets/image/app.png`)" alt="Exedy App"></ion-img>
         </div>
       </div>
     </ion-toolbar>

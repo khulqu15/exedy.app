@@ -4,23 +4,17 @@
     <LayoutHeader/>
 
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Blank</ion-title>
-        </ion-toolbar>
-      </ion-header>
-
-      <div id="container" class="pt-6">
-        <div class="px-12 space-y-4" v-if="!is_loading">
+      <div id="container" class="pt-6 pb-24">
+        <div class="px-12 space-y-4">
           <div class="flex">
             <div class="grow w-full">
               <ion-item>
                 <ion-label position="floating">ロボットのステータス</ion-label>
-                <ion-input v-model="form.status"></ion-input>
+                <ion-input v-model="form.status" readonly></ion-input>
               </ion-item>
             </div>
             <div class="self-center p-3">
-              <ion-button id="reset-button" color="primary">
+              <ion-button @click="getStatus(true)" id="reset-button" color="primary">
                 <ion-icon name="refresh-outline"></ion-icon>
               </ion-button>
             </div>
@@ -28,19 +22,11 @@
           <div class="border-b-0 text-left">
             <ion-label position="floating" class="text-xs">カメラ映像</ion-label>
             <div class="flex justify-center">
-              <ion-img class="w-94" :src="require(`/public/assets/image/gazebo-pic.webp`)" alt="Exedy App"></ion-img>
+              <ion-img v-if="!camera_view" class="w-94" :src="require(`/public/assets/image/camera_no_found.png`)" alt="Robot cam not found"></ion-img>
+              <ion-img v-else class="w-94" :src="camera_view" alt="Robot cam not found"></ion-img>
             </div>
           </div>
-          <ion-button @click="onSubmit" size="large" expand="block" color="primary">追従開始</ion-button>
-        </div>
-        <div class="px-12 space-y-4" v-else>
-          <ion-loading
-              :is-open="is_loading"
-              cssClass="my-custom-class"
-              message="接続中..."
-              :duration="timeout"
-              @didDismiss="onLoading(false)"
-          ></ion-loading>
+          <ion-button @click="onStart" size="large" expand="block" color="primary">追従開始</ion-button>
         </div>
       </div>
     </ion-content>
@@ -50,85 +36,74 @@
 <script lang="ts">
 import {
   IonContent,
-  IonLoading,
-  IonHeader,
   IonImg,
   IonPage,
   IonButton,
-  IonTitle,
-  IonToolbar,
   IonLabel,
   IonInput,
   IonItem } from '@ionic/vue';
 import {defineComponent, ref} from 'vue';
 import LayoutHeader from '@/layouts/LayoutHeader.vue';
+import LoadingMixin from "@/mixins/LoadingMixin.vue";
+import ToastMixin from "@/mixins/ToastMixin.vue";
 export default defineComponent({
   name: 'HomePage',
+  mixins: [LoadingMixin, ToastMixin],
   data() {
     return {
-      is_loading: ref(false),
-      timeout: 5000,
+      camera_view: false,
       form: {
-        status: "停止中"
+        status: "Loading",
       }
     }
   },
+  mounted() {
+    // setInterval(() => {
+    this.getCamera()
+    // }, 1000)
+    this.getStatus()
+  },
   components: {
     LayoutHeader,
-    IonLoading,
     IonButton,
     IonImg,
     IonContent,
-    IonHeader,
     IonPage,
-    IonTitle,
     IonLabel,
     IonInput,
     IonItem,
-    IonToolbar
   },
   methods: {
-    onLoading(state: boolean) {
-      this.is_loading = this.is_loading = state
+    onStart() {
+      this.axios.post(`${process.env.VUE_APP_URL}${this.$route.params.robot_id}/commands/follow`).then((response: any) => {
+        console.log(response)
+        this.showToast('Command follow started', 'success', 5000, 'top')
+      }).catch((error: any) => {
+        if(error.response != undefined) {
+          if(error.response.status == 404)
+            this.showToast('Request not found', 'danger', 5000, 'top')
+        }
+      })
     },
-    onSubmit() {
-      console.log(this.form.status)
-      // consums api function
-      this.onLoading(true)
+    getCamera() {
+      this.axios.get(`${process.env.VUE_APP_URL}${this.$route.params.robot_id}/camera/image`).then((response: any) => {
+        this.camera_view = response.data
+      }).catch((error: any) => {
+        this.showToast(error.response.data.errors[0].message, 'danger', 20000, 'top')
+      })
+    },
+    getStatus(reload = false) {
+      this.axios.get(`${process.env.VUE_APP_URL}${this.$route.params.robot_id}/status`).then((response: any) => {
+        console.log(response)
+        if(!response.data.status)
+          this.showToast('Robot id is not found', 'danger', 5000, 'top')
+        else {
+          this.form.status = response.data.status
+        }
+      })
+      if(reload)
+        this.showToast('Data is loaded', 'success', 5000, 'top')
     }
   }
 });
 </script>
-
-<style scoped>
-#reset-button {
-  --border-radius: 100% !important;
-  width: 50px !important;
-  height: 50px !important;
-}
-#container {
-  text-align: center;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-}
-
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
-}
-</style>
