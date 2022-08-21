@@ -66,7 +66,13 @@ export default defineComponent({
         this.showToast('Robot id is required', 'danger', 5000, 'top')
       }
       event.preventDefault()
-      this.axios.get(`${process.env.VUE_APP_URL}${this.form.robot_id}/status`).then((response: any) => {
+      this.axios.get(`${process.env.VUE_APP_URL}${this.form.robot_id}/status`, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        },
+      }).then((response: any) => {
         if(!response.data.status)
           this.showToast('Robot id is not found', 'danger', 5000, 'top')
         else {
@@ -78,10 +84,7 @@ export default defineComponent({
           }, 5000)
         }
       }).catch((error: any) => {
-        if(error.response != undefined) {
-          if(error.response.status == 404)
-            this.showToast('Request not found', 'danger', 5000, 'top')
-        }
+        this.showToast('Request not found', 'danger', 5000, 'top')
       })
     }
   }

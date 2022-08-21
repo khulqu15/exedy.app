@@ -47,6 +47,10 @@ import './theme/tailwind.css';
 import {informationCircle} from "ionicons/icons";
 
 const app = createApp(App)
+axios.defaults.headers.get['Access-Control-Allow-Origin'] = '*'
+axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*'
+axios.defaults.headers.get['Content-Type'] = 'application/x-www-form-urlencoded'
+axios.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded'
 app.config.globalProperties.axios = axios
 app.config.globalProperties.baseUrl = 'http://localhost:8000/v1/robots/'
 app.use(IonicVue)
