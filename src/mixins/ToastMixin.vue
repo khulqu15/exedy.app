@@ -25,7 +25,6 @@ export default {
           })
       await toast.present();
       const { role } = await toast.onDidDismiss();
-      console.log('onDidDismiss resolved with role', role);
     },
   }
 }

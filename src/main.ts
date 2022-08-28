@@ -2,6 +2,11 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router';
 import {IonicVue, toastController} from '@ionic/vue';
+import { Buffer } from 'buffer'
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+window.Buffer = Buffer;
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
