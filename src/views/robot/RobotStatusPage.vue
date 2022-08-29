@@ -22,8 +22,8 @@
           <div class="border-b-0 text-left">
             <ion-label position="floating" class="text-xs">カメラ映像</ion-label>
             <div class="flex justify-center">
-              <ion-img v-if="!camera_view" class="w-94" :src="require(`/public/assets/image/camera_no_found.png`)" alt="Robot cam not found"></ion-img>
-              <ion-img v-else class="w-94" :src="camera_view" alt="Robot cam not found"></ion-img>
+              <ion-img v-if="!is_loaded_image" class="w-94" :src="require(`/public/assets/image/camera_no_found.png`)" alt="Robot cam not found"></ion-img>
+              <ion-img v-else class="w-94" :src="camera_view" id="image-preview" alt="Robot cam not found"></ion-img>
             </div>
           </div>
           <ion-button @click="onStart" size="large" expand="block" color="primary">追従開始</ion-button>
@@ -39,10 +39,11 @@ import {
   IonImg,
   IonPage,
   IonButton,
+  IonIcon,
   IonLabel,
   IonInput,
   IonItem } from '@ionic/vue';
-import {defineComponent, ref} from 'vue';
+import {defineComponent} from 'vue';
 import LayoutHeader from '@/layouts/LayoutHeader.vue';
 import LoadingMixin from "@/mixins/LoadingMixin.vue";
 import ToastMixin from "@/mixins/ToastMixin.vue";
@@ -51,16 +52,14 @@ export default defineComponent({
   mixins: [LoadingMixin, ToastMixin],
   data() {
     return {
-      camera_view: false,
+      camera_view: '',
+      is_loaded_image: false,
       form: {
         status: "Loading",
       }
     }
   },
   mounted() {
-    // setInterval(() => {
-    this.getCamera()
-    // }, 1000)
     this.getStatus()
   },
   components: {
@@ -68,6 +67,7 @@ export default defineComponent({
     IonButton,
     IonImg,
     IonContent,
+    IonIcon,
     IonPage,
     IonLabel,
     IonInput,
@@ -85,12 +85,25 @@ export default defineComponent({
         }
       })
     },
-    getCamera() {
-      this.axios.get(`${process.env.VUE_APP_URL}${this.$route.params.robot_id}/camera/image`).then((response: any) => {
-        this.camera_view = response.data
-      }).catch((error: any) => {
-        this.showToast(error.response.data.errors[0].message, 'danger', 20000, 'top')
+    getCamera: function () {
+      this.axios.get(`${process.env.VUE_APP_URL}${this.$route.params.robot_id}/camera/image`, {
+        responseType: 'blob'
+      }).then((response: any) => {
+        let imageElement = document.getElementById('image-preview'),
+            reader = new FileReader()
+        reader.readAsDataURL(response.data)
+        reader.onload = () => {
+          let imageUrl = reader.result
+          if(imageElement)
+            imageElement.setAttribute('src', imageUrl as string)
+        }
+        this.camera_view = URL.createObjectURL(response.data)
+        this.is_loaded_image = true
       })
+      // .catch((error: any) => {
+      //   if(error.response)
+      //     this.showToast(error.response.data.errors[0].message, 'danger', 20000, 'top')
+      // })
     },
     getStatus(reload = false) {
       this.axios.get(`${process.env.VUE_APP_URL}${this.$route.params.robot_id}/status`).then((response: any) => {
@@ -101,6 +114,7 @@ export default defineComponent({
           this.form.status = response.data.status
         }
       })
+      this.getCamera()
       if(reload)
         this.showToast('Data is loaded', 'success', 5000, 'top')
     }
