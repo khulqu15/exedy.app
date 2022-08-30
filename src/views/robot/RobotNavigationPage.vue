@@ -34,6 +34,7 @@ import {
   IonSelectOption,
   IonPage,
   IonButton,
+  IonIcon,
   IonLabel,
   IonItem } from '@ionic/vue';
 import {defineComponent, ref} from 'vue';
@@ -56,7 +57,6 @@ export default defineComponent({
   },
   mounted() {
     this.getMap()
-    this.initCanvas()
   },
   components: {
     CanvasView,
@@ -65,14 +65,12 @@ export default defineComponent({
     IonSelect,
     IonSelectOption,
     IonContent,
+    IonIcon,
     IonPage,
     IonLabel,
     IonItem,
   },
   methods: {
-    initCanvas() {
-
-    },
     getMap(reload = false) {
       this.axios.get(`${process.env.VUE_APP_URL}${this.$route.params.robot_id}/map`).then((response: any) => {
         if(response.data.status) {

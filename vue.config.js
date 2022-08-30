@@ -1,4 +1,5 @@
 const Dotenv = require('dotenv-webpack')
+const webpack = require('webpack')
 module.exports = {
     lintOnSave: false,
     chainWebpack: config => {
@@ -19,7 +20,10 @@ module.exports = {
     },
     configureWebpack: {
         plugins: [
-            new Dotenv()
+            new Dotenv(),
+            new webpack.ProvidePlugin({
+                Buffer: ['buffer', 'Buffer'],
+            }),
         ]
     }
 }
